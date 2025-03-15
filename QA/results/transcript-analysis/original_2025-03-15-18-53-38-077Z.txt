@@ -1,6 +1,0 @@
-Clinician: Hello, what brings you in today?
-Patient: I've been having this persistent cough.
-Clinician: How long has this been going on?
-Patient: About two weeks now.
-Clinician: Any other symptoms?
-Patient: Just feeling tired and sometimes short of breath.
