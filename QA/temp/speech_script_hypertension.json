@@ -1,0 +1,44 @@
+[
+  {
+    "text": "What brings you to the clinic today?",
+    "speaker": "Clinician",
+    "voice": "female",
+    "rate": 0.95,
+    "pitch": 1.2
+  },
+  {
+    "text": "My home blood pressure readings have been quite high lately.",
+    "speaker": "Patient",
+    "voice": "male",
+    "rate": 0.92,
+    "pitch": 0.9
+  },
+  {
+    "text": "What kind of numbers are you seeing at home?",
+    "speaker": "Clinician",
+    "voice": "female",
+    "rate": 0.95,
+    "pitch": 1.2
+  },
+  {
+    "text": "Usually around 150 over 95, sometimes higher in the evenings.",
+    "speaker": "Patient",
+    "voice": "male",
+    "rate": 0.92,
+    "pitch": 0.9
+  },
+  {
+    "text": "Are you experiencing any headaches, dizziness, or vision changes?",
+    "speaker": "Clinician",
+    "voice": "female",
+    "rate": 0.95,
+    "pitch": 1.2
+  },
+  {
+    "text": "I do get headaches occasionally, especially when the pressure is high.",
+    "speaker": "Patient",
+    "voice": "male",
+    "rate": 0.92,
+    "pitch": 0.9
+  }
+]

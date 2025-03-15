@@ -40,7 +40,7 @@
     "fails": 0
   },
   "Scribe Flow: Generate and Test Dialogue with Alternating Voices": {
-    "totalRuns": 27,
+    "totalRuns": 28,
     "fails": 3
   },
   "Test Web Speech Synthesis with Distinct Voices": {
