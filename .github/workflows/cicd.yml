@@ -2,48 +2,49 @@ name: Transcript Quality Test
 
 on:
   push:
-    branches: [ test ]  # Trigger the workflow on every commit to the test branch
+    branches: [ testing ]  # or [ dev, test ] as needed
 
 jobs:
   quality-check:
     runs-on: ubuntu-latest
-
     steps:
-      # Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
 
-      # Install dependencies
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      # Install Playwright browsers (if needed by your test)
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      # Optional: Install ffmpeg if your test requires it
       - name: Install ffmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      # Run your test
-      - name: Run transcript quality test
-        run: npx playwright test Transcriptscore.spec.js
+      - name: Set up Google Cloud credentials
+        run: echo "${{ secrets.GOOGLE_API_KEY }}" > audiotesting.json
 
-      # Upload test results if the test fails (optional)
+      - name: Set up OpenAI API key
+        run: echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+
+      - name: Run transcript quality test
+        run: npx playwright test 2_tests/Transcriptscore.spec.js
+
       - name: Upload test results on failure
         if: failure()
         uses: actions/upload-artifact@v3
         with:
-          name: transcript-test-results
+          name: quality-test-results
           path: |
             results/
             test-results/
             playwright-report/
           retention-days: 7
+
+permissions:
+  contents: read
