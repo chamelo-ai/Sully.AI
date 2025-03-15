@@ -1,51 +1,41 @@
-name: Transcript Quality Test
+name: Playwright Tests
 
-on:
+on: 
   push:
-    branches: [ test ]  # or [ dev, test ] as needed
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
 
 jobs:
-  quality-check:
+  test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    # Checkout the repository
+    - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
+    # Setup Node.js
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
 
-      - name: Install dependencies
-        run: npm install
+    # Install dependencies
+    - name: Install dependencies
+      run: npm install
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+    # Install Playwright browsers
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
 
-      - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+    # Run Playwright tests
+    - name: Run Playwright tests
+      run: npx playwright test
 
-      - name: Set up Google Cloud credentials
-        run: echo "${{ secrets.GOOGLE_API_KEY }}" > audiotesting.json
-
-      - name: Set up OpenAI API key
-        run: echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
-
-      - name: Run transcript quality test
-        run: npx playwright test 2_tests/Transcriptscore.spec.js
-
-      - name: Upload test results on failure
-        if: failure()
-        uses: actions/upload-artifact@v3.1.2
-
-        with:
-          name: quality-test-results
-          path: |
-            results/
-            test-results/
-            playwright-report/
-          retention-days: 7
-
-permissions:
-  contents: read
+    # Upload test results as artifacts if tests fail
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: playwright-test-results
+        path: QA/automation-results/
+        retention-days: 30
