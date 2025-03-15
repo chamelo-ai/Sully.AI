@@ -2,7 +2,7 @@ name: Transcript Quality Test
 
 on:
   push:
-    branches: [ testing ]  # or [ dev, test ] as needed
+    branches: [ test ]  # or [ dev, test ] as needed
 
 jobs:
   quality-check:
