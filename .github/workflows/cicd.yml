@@ -1,0 +1,59 @@
+name: Playwright Tests
+
+on: 
+  # push:
+  #   branches: [ '*' ]
+  pull_request:
+    branches: [ 'test' ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - uses: actions/checkout@v4
+
+      # Debug: List directory contents (optional)
+      - name: List directory contents
+        run: |
+          pwd
+          ls -la
+          find . -name "package.json"
+
+      # Setup Node.js
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      # Install dependencies in QA folder
+      - name: Install dependencies
+        run: |
+          if [ -f "QA/package.json" ]; then
+            cd QA
+            npm install
+          else
+            echo "package.json not found in QA directory"
+            exit 1
+          fi
+
+      # Install Playwright browsers
+      - name: Install Playwright Browsers
+        run: |
+          cd QA
+          npx playwright install --with-deps
+
+      # Run the specific Playwright test file
+      - name: Run Playwright tests
+        run: |
+          cd QA
+          npx playwright test 2_tests/Login.spec.js
+
+      # Upload test results as artifacts if tests fail (optional)
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-test-results
+          path: QA/automation-results/
+          retention-days: 30

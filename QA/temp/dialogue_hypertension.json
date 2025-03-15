@@ -1,0 +1,26 @@
+[
+  {
+    "speaker": "Clinician",
+    "text": "What brings you to the clinic today?"
+  },
+  {
+    "speaker": "Patient",
+    "text": "My home blood pressure readings have been quite high lately."
+  },
+  {
+    "speaker": "Clinician",
+    "text": "What kind of numbers are you seeing at home?"
+  },
+  {
+    "speaker": "Patient",
+    "text": "Usually around 150 over 95, sometimes higher in the evenings."
+  },
+  {
+    "speaker": "Clinician",
+    "text": "Are you experiencing any headaches, dizziness, or vision changes?"
+  },
+  {
+    "speaker": "Patient",
+    "text": "I do get headaches occasionally, especially when the pressure is high."
+  }
+]
