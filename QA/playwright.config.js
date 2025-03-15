@@ -7,7 +7,7 @@ export default defineConfig({
   testDir: './2_tests',
   timeout: 30000,
   use: {
-    headless: false,
+    headless: process.env.CI === 'true' || process.env.PLAYWRIGHT_HEADLESS === 'true',
     video: 'retain-on-failure',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
