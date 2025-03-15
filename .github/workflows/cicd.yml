@@ -1,41 +1,45 @@
-name: Playwright Tests
+name: Transcript Quality Test
 
-on: 
+on:
   push:
-    branches: [ '*' ]
-  pull_request:
-    branches: [ '*' ]
+    branches: [ test ]  # Trigger on every commit to the test branch
 
 jobs:
-  test:
+  quality-check:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # Setup Node.js
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
 
-    # Install dependencies
-    - name: Install dependencies
-      run: npm install
+      - name: Change to QA directory and install dependencies
+        run: |
+          cd QA
+          npm ci
 
-    # Install Playwright browsers
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
-    # Run Playwright tests
-    - name: Run Playwright tests
-      run: npx playwright test
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-    # Upload test results as artifacts if tests fail
-    - uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: playwright-test-results
-        path: QA/automation-results/
-        retention-days: 30
+      - name: Run transcript quality test
+        run: npx playwright test Transcriptscore.spec.js
+
+      # Optionally upload artifacts on failure
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: transcript-test-results
+          path: |
+            results/
+            test-results/
+            playwright-report/
+          retention-days: 7
