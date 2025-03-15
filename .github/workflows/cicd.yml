@@ -1,45 +1,59 @@
-name: Transcript Quality Test
+name: Playwright Tests
 
-on:
+on: 
   push:
-    branches: [ test ]  # Trigger on every commit to the test branch
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
 
 jobs:
-  quality-check:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    # Checkout the repository
+    - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
+    # Debug: List directory contents
+    - name: List directory contents
+      run: |
+        pwd
+        ls -la
+        find . -name "package.json"
 
-      - name: Change to QA directory and install dependencies
-        run: |
+    # Setup Node.js
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+
+    # Install dependencies
+    - name: Install dependencies
+      run: |
+        if [ -f "QA/package.json" ]; then
           cd QA
-          npm ci
+          npm install
+        else
+          echo "package.json not found in QA directory"
+          exit 1
+        fi
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+    # Install Playwright browsers
+    - name: Install Playwright Browsers
+      run: |
+        cd QA
+        npx playwright install --with-deps
 
-      - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+    # Run Playwright tests
+    - name: Run Playwright tests
+      run: |
+        cd QA
+        npx playwright test
 
-      - name: Run transcript quality test
-        run: npx playwright test Transcriptscore.spec.js
-
-      # Optionally upload artifacts on failure
-      - name: Upload test results on failure
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: transcript-test-results
-          path: |
-            results/
-            test-results/
-            playwright-report/
-          retention-days: 7
+    # Upload test results as artifacts if tests fail
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: playwright-test-results
+        path: QA/automation-results/
+        retention-days: 30
