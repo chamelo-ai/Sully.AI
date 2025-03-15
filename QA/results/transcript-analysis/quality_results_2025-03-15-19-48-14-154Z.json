@@ -1,0 +1,60 @@
+{
+  "accuracy": {
+    "overallScore": 0.7317808219178084,
+    "contentCoverage": 1,
+    "speakerAccuracy": 0.2,
+    "presentPhrases": [
+      "cough",
+      "fever",
+      "breath",
+      "hello, what brings you",
+      "what brings you in",
+      "brings you in today?",
+      "i have had a",
+      "have had a persistent",
+      "had a persistent cough",
+      "a persistent cough for",
+      "persistent cough for the",
+      "cough for the past",
+      "for the past two",
+      "the past two weeks.",
+      "i see. is it"
+    ],
+    "missingPhrases": [],
+    "incorrectTranscriptions": [
+      {
+        "original": "Clinician: I see.",
+        "transcribed": "I see. Is it worse at",
+        "similarityScore": 0.3333333333333333
+      },
+      {
+        "original": "Patient: No fever or chills, but I do feel short of breath sometimes after coughing a lot.",
+        "transcribed": "particular time of day? It seems worse at night and early morning. Any fever: chills: or shortness of breath?",
+        "similarityScore": 0.5076142131979695
+      },
+      {
+        "original": "Clinician: Hello, what brings you in today?",
+        "transcribed": "Hello. What brings you in today? I have had a persistent cough for the",
+        "similarityScore": 0.5405405405405406
+      },
+      {
+        "original": "Patient: I have had a persistent cough for the past two weeks.",
+        "transcribed": "you in today? I have had a persistent cough for the past two weeks. I see. Is it worse at any particular time of",
+        "similarityScore": 0.6511627906976745
+      },
+      {
+        "original": "Patient: It seems worse at night and early morning.",
+        "transcribed": "Is it worse at any particular time of day? It seems worse at night and early morning. Any",
+        "similarityScore": 0.6521739130434783
+      }
+    ],
+    "improvementSuggestions": []
+  },
+  "quality": {
+    "naturalness": 8,
+    "coherence": 8,
+    "medicalTerminologyAccuracy": 7,
+    "speakerAttribution": 2
+  },
+  "overallQualityScore": 73.27123287671233
+}

@@ -1,0 +1,62 @@
+{
+  "accuracy": {
+    "overallScore": 0.7011070110701108,
+    "contentCoverage": 0.625,
+    "speakerAccuracy": 0,
+    "presentPhrases": [
+      "Clinician: [FALLBACK] Hello, what brings you in today",
+      "Patient: [FALLBACK] I've been having this persistent cough",
+      "Clinician: [FALLBACK] How long",
+      "has this been going",
+      "Patient: [FALLBACK] About two weeks now"
+    ],
+    "missingPhrases": [
+      "Clinician: [FALLBACK] Any other symptoms",
+      "Patient: [FALLBACK] Just feeling",
+      "tired and sometimes short"
+    ],
+    "incorrectTranscriptions": [
+      {
+        "original": "Patient: [FALLBACK] Just feeling tired and sometimes short of breath.",
+        "transcribed": "this been going on? Patient, fallback, about two weeks now. Clinician, fall",
+        "similarityScore": 0.38028169014084506
+      },
+      {
+        "original": "Clinician: [FALLBACK] Any other symptoms",
+        "transcribed": "Clinician, fallback. How long has this been",
+        "similarityScore": 0.3950617283950617
+      },
+      {
+        "original": "Clinician: [FALLBACK] Hello, what brings you in today",
+        "transcribed": "Clinician, fallback. Hello. What brings you in today? Patient, fallback. I've been",
+        "similarityScore": 0.6766917293233082
+      },
+      {
+        "original": "Clinician: [FALLBACK] How long has this been going on",
+        "transcribed": "Clinician, fallback. How long has this been going on? Patient, fallback, about two",
+        "similarityScore": 0.6917293233082706
+      }
+    ]
+  },
+  "quality": {
+    "naturalness": 8,
+    "coherence": 4,
+    "medicalTerminologyAccuracy": 5,
+    "speakerAttribution": 0
+  },
+  "medicalTerms": {
+    "found": [
+      "cough"
+    ],
+    "missed": [
+      "breath"
+    ]
+  },
+  "assessment": "Adequate transcript quality but significant improvements needed in accuracy. Medical terminology capture needs significant improvement. Speaker attribution is inconsistent or missing.",
+  "improvementSuggestions": [
+    "Improve accuracy of medical terms. Missed terms include: breath",
+    "Improve speaker attribution to clearly distinguish between different speakers",
+    "Improve coherence by ensuring logical flow between sentences"
+  ],
+  "overallQualityScore": 51
+}

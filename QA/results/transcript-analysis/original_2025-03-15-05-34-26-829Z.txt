@@ -1,0 +1,6 @@
+Clinician: [FALLBACK] Hello, what brings you in today?
+Patient: [FALLBACK] I've been having this persistent cough.
+Clinician: [FALLBACK] How long has this been going on?
+Patient: [FALLBACK] About two weeks now.
+Clinician: [FALLBACK] Any other symptoms?
+Patient: [FALLBACK] Just feeling tired and sometimes short of breath.

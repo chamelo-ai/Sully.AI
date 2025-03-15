@@ -1,0 +1,6 @@
+Clinician: Hello, what brings you in today?
+Patient: I have had a persistent cough for the past two weeks.
+Clinician: I see. Is it worse at any particular time of day?
+Patient: It seems worse at night and early morning.
+Clinician: Any fever, chills, or shortness of breath?
+Patient: No fever or chills, but I do feel short of breath sometimes after coughing a lot.

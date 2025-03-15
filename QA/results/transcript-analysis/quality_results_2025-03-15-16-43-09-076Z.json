@@ -1,0 +1,60 @@
+{
+  "accuracy": {
+    "overallScore": 0.7265658747300217,
+    "contentCoverage": 1,
+    "speakerAccuracy": 0,
+    "presentPhrases": [
+      "cough",
+      "breath",
+      "hello, what brings you",
+      "what brings you in",
+      "brings you in today?",
+      "i've been having this",
+      "been having this persistent",
+      "having this persistent cough.",
+      "how long has this",
+      "long has this been",
+      "has this been going",
+      "this been going on?",
+      "about two weeks now.",
+      "any other symptoms?",
+      "just feeling tired and"
+    ],
+    "missingPhrases": [],
+    "incorrectTranscriptions": [
+      {
+        "original": "Clinician: Hello, what brings you in today?",
+        "transcribed": "Hello. What brings you in today? I've been having this persistent cough. How long",
+        "similarityScore": 0.5081967213114754
+      },
+      {
+        "original": "Clinician: How long has this been going on?",
+        "transcribed": "How long has this been going on? About two weeks now. Any other symptoms? Just feeling",
+        "similarityScore": 0.5354330708661418
+      },
+      {
+        "original": "Patient: About two weeks now.",
+        "transcribed": "has this been going on? About two weeks now. Any",
+        "similarityScore": 0.56
+      },
+      {
+        "original": "Clinician: Any other symptoms?",
+        "transcribed": "now. Any other symptoms? Just feeling tired and",
+        "similarityScore": 0.5866666666666667
+      },
+      {
+        "original": "Patient: I've been having this persistent cough.",
+        "transcribed": "you in today? I've been having this persistent cough. How long has this been",
+        "similarityScore": 0.6557377049180327
+      }
+    ],
+    "improvementSuggestions": []
+  },
+  "quality": {
+    "naturalness": 8,
+    "coherence": 8,
+    "medicalTerminologyAccuracy": 7,
+    "speakerAttribution": 7
+  },
+  "overallQualityScore": 69.06263498920086
+}

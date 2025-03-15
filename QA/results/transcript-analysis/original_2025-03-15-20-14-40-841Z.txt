@@ -1,0 +1,6 @@
+Clinician: What seems to be the problem today?
+Patient: I have been having severe headaches for the past week.
+Clinician: Can you describe the pain? Is it constant or intermittent?
+Patient: It comes and goes, but when it hits, it feels like pounding on the right side.
+Clinician: Any sensitivity to light or sound during these headaches?
+Patient: Yes, light makes it much worse, and I need to lie down in a dark room.

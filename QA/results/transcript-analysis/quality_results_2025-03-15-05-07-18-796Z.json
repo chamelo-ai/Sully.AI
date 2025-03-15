@@ -1,0 +1,25 @@
+{
+  "accuracy": {
+    "overallScore": 0.18302180685358255,
+    "contentCoverage": 1,
+    "speakerAccuracy": 1,
+    "presentPhrases": [
+      "cough",
+      "breath"
+    ],
+    "missingPhrases": []
+  },
+  "quality": {
+    "naturalness": 5,
+    "coherence": 5,
+    "medicalTerminologyAccuracy": 10,
+    "speakerAttribution": 10
+  },
+  "assessment": "Evaluation based on basic metrics only (LLM evaluation failed).",
+  "improvementSuggestions": [
+    "Ensure all medical terms are accurately transcribed",
+    "Maintain clear speaker attribution throughout"
+  ],
+  "overallQualityScore": 51,
+  "error": "Unsupported model type: t5"
+}
