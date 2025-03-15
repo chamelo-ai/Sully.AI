@@ -1,0 +1,6 @@
+file '/Users/nathancha/Desktop/PlaywrightAutomation/output/temp_audio/line_000.mp3'
+file '/Users/nathancha/Desktop/PlaywrightAutomation/output/temp_audio/line_001.mp3'
+file '/Users/nathancha/Desktop/PlaywrightAutomation/output/temp_audio/line_002.mp3'
+file '/Users/nathancha/Desktop/PlaywrightAutomation/output/temp_audio/line_003.mp3'
+file '/Users/nathancha/Desktop/PlaywrightAutomation/output/temp_audio/line_004.mp3'
+file '/Users/nathancha/Desktop/PlaywrightAutomation/output/temp_audio/line_005.mp3'
