@@ -1,0 +1,49 @@
+name: Transcript Quality Test
+
+on:
+  push:
+    branches: [ test ]  # Trigger the workflow on every commit to the test branch
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Install Playwright browsers (if needed by your test)
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      # Optional: Install ffmpeg if your test requires it
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      # Run your test
+      - name: Run transcript quality test
+        run: npx playwright test Transcriptscore.spec.js
+
+      # Upload test results if the test fails (optional)
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: transcript-test-results
+          path: |
+            results/
+            test-results/
+            playwright-report/
+          retention-days: 7
