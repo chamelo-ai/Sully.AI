@@ -1,0 +1,57 @@
+{
+  "contentAccuracy": 93,
+  "speakerAttribution": 0,
+  "coherence": 8,
+  "naturalness": 8,
+  "overallScore": 64,
+  "presentPhrases": [
+    "blood pressure",
+    "what brings you to",
+    "brings you to the",
+    "you to the clinic",
+    "to the clinic today?",
+    "my home blood pressure",
+    "home blood pressure readings",
+    "blood pressure readings have",
+    "pressure readings have been",
+    "readings have been quite",
+    "have been quite high",
+    "been quite high lately.",
+    "what kind of numbers",
+    "kind of numbers are"
+  ],
+  "missingPhrases": [
+    "dizziness"
+  ],
+  "incorrectTranscriptions": [
+    {
+      "original": "Patient: I do get headaches occasionally, especially when the pressure is high.",
+      "transcribed": "at home? Usually around 150 over 95, sometimes higher in the evenings. Are you experiencing",
+      "similarityScore": 0.39285714285714285
+    },
+    {
+      "original": "Clinician: Are you experiencing any headaches, dizziness, or vision changes?",
+      "transcribed": "150 over 95, sometimes higher in the evenings. Are you experiencing",
+      "similarityScore": 0.45390070921985815
+    },
+    {
+      "original": "Clinician: What brings you to the clinic today?",
+      "transcribed": "What brings you to the clinic today? My home blood pressure readings have been quite high",
+      "similarityScore": 0.5373134328358209
+    },
+    {
+      "original": "Clinician: What kind of numbers are you seeing at home?",
+      "transcribed": "clinic today? My home blood pressure readings have been quite high lately. What kind of numbers are you seeing at",
+      "similarityScore": 0.5662650602409639
+    },
+    {
+      "original": "Patient: My home blood pressure readings have been quite high lately.",
+      "transcribed": "to the clinic today? My home blood pressure readings have been quite high lately. What kind of numbers are you seeing at",
+      "similarityScore": 0.6524064171122995
+    }
+  ],
+  "improvementSuggestions": [
+    "Improve speaker attribution to better distinguish between speakers",
+    "Address incorrect transcriptions, especially medical terminology"
+  ]
+}

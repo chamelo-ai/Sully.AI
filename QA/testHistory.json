@@ -1,14 +1,14 @@
 {
   "Scribe Flow: Select existing patient from dropdown and record visit without microphone permission": {
-    "totalRuns": 9,
+    "totalRuns": 11,
     "fails": 2
   },
   "Scribe Flow: Select existing patient from dropdown and record visit": {
-    "totalRuns": 9,
+    "totalRuns": 11,
     "fails": 2
   },
   "Scribe Transcript Flow: Send report after selecting an existing patient": {
-    "totalRuns": 9,
+    "totalRuns": 11,
     "fails": 2
   },
   "Scribe Flow: Test with AI-generated dialogue and Web Speech Synthesis": {
@@ -16,15 +16,15 @@
     "fails": 2
   },
   "User can login with email/password and navigate between nav bar": {
-    "totalRuns": 9,
+    "totalRuns": 11,
     "fails": 2
   },
   "User can navigate side navbar tabs": {
-    "totalRuns": 8,
+    "totalRuns": 10,
     "fails": 2
   },
   "Scribe Flow: Select existing patient from dropdown and record visit under mininum threshold": {
-    "totalRuns": 9,
+    "totalRuns": 11,
     "fails": 2
   },
   "Scribe Flow: Test with AI-generated dialogue and quality evaluation": {
@@ -40,8 +40,8 @@
     "fails": 0
   },
   "Scribe Flow: Generate and Test Dialogue with Alternating Voices": {
-    "totalRuns": 29,
-    "fails": 3
+    "totalRuns": 43,
+    "fails": 4
   },
   "Test Web Speech Synthesis with Distinct Voices": {
     "totalRuns": 1,

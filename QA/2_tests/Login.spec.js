@@ -5,11 +5,11 @@ import { testData } from '../data/testData.js';
 import { LoginPage } from '../1_pages/LoginPage.js';
 import { common, sideNavBar } from '../1_pages/1_locators.js';
 
-// test.beforeEach(async ({}, testInfo) => {
-//   if (!(await shouldRunTest(testInfo.title))) {
-//     testInfo.skip();
-//   }
-// });
+test.beforeEach(async ({}, testInfo) => {
+  if (!(await shouldRunTest(testInfo.title))) {
+    testInfo.skip();
+  }
+});
 
 test('User can login with email/password and navigate between nav bar', async ({ page }) => {
   const loginPage = new LoginPage(page);

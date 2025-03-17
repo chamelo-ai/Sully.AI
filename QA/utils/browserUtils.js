@@ -1,8 +1,4 @@
 /**
- * Browser and Playwright utility functions
- */
-
-/**
  * Create a browser context with microphone permissions
  * @param {Browser} browser - Playwright browser instance
  * @param {string} baseURL - Base URL for the context

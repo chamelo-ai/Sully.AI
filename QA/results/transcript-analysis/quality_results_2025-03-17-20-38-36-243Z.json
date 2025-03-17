@@ -1,0 +1,58 @@
+{
+  "contentAccuracy": 93,
+  "speakerAttribution": 0,
+  "coherence": 6,
+  "naturalness": 8,
+  "overallScore": 64,
+  "presentPhrases": [
+    "blood pressure",
+    "what brings you to",
+    "brings you to the",
+    "you to the clinic",
+    "to the clinic today?",
+    "my home blood pressure",
+    "home blood pressure readings",
+    "blood pressure readings have",
+    "pressure readings have been",
+    "readings have been quite",
+    "have been quite high",
+    "been quite high lately.",
+    "what kind of numbers",
+    "kind of numbers are"
+  ],
+  "missingPhrases": [
+    "dizziness"
+  ],
+  "incorrectTranscriptions": [
+    {
+      "original": "Patient: I do get headaches occasionally, especially when the pressure is high.",
+      "transcribed": "What am I Usually around 150 over 95, sometimes higher in the evenings. Are you experiencing any head",
+      "similarityScore": 0.43820224719101125
+    },
+    {
+      "original": "Clinician: Are you experiencing any headaches, dizziness, or vision changes?",
+      "transcribed": "sometimes higher in the evenings. Are you experiencing any head",
+      "similarityScore": 0.5401459854014599
+    },
+    {
+      "original": "Clinician: What kind of numbers are you seeing at home?",
+      "transcribed": "high lately. What kind of numbers are you seeing at home? Wait. What am I Usually around 150 over 95,",
+      "similarityScore": 0.5714285714285714
+    },
+    {
+      "original": "Clinician: What brings you to the clinic today?",
+      "transcribed": "Just Let me What brings you to the clinic today? That was My home blood pressure",
+      "similarityScore": 0.576
+    },
+    {
+      "original": "Patient: My home blood pressure readings have been quite high lately.",
+      "transcribed": "Just Let me What brings you to the clinic today? That was My home blood pressure readings have been quite high lately.",
+      "similarityScore": 0.6594594594594595
+    }
+  ],
+  "improvementSuggestions": [
+    "Improve speaker attribution to better distinguish between speakers",
+    "Improve logical flow and topic continuity between sentences",
+    "Address incorrect transcriptions, especially medical terminology"
+  ]
+}

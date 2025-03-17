@@ -1,0 +1,6 @@
+Clinician: What brings you to the clinic today?
+Patient: My home blood pressure readings have been quite high lately.
+Clinician: What kind of numbers are you seeing at home?
+Patient: Usually around 150 over 95, sometimes higher in the evenings.
+Clinician: Are you experiencing any headaches, dizziness, or vision changes?
+Patient: I do get headaches occasionally, especially when the pressure is high.

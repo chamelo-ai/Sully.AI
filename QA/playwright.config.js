@@ -6,6 +6,11 @@ const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
 export default defineConfig({
   testDir: './2_tests',
   timeout: 30000,
+  // Add these properties for one-by-one execution
+  workers: 1,           // Run tests with just 1 worker (sequentially)
+  fullyParallel: false, // Disable parallel execution
+  retries: 0,           // Optional: Setting retries to 0 makes debugging clearer
+  
   use: {
     headless: process.env.CI === 'true' || process.env.PLAYWRIGHT_HEADLESS === 'true',
     video: 'retain-on-failure',

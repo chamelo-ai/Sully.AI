@@ -1,0 +1,31 @@
+{
+  "contentAccuracy": 0,
+  "speakerAttribution": 0,
+  "coherence": 5,
+  "naturalness": null,
+  "overallScore": null,
+  "presentPhrases": [],
+  "missingPhrases": [
+    "blood pressure",
+    "dizziness",
+    "what brings you to",
+    "brings you to the",
+    "you to the clinic",
+    "to the clinic today?",
+    "my home blood pressure",
+    "home blood pressure readings",
+    "blood pressure readings have",
+    "pressure readings have been",
+    "readings have been quite",
+    "have been quite high",
+    "been quite high lately.",
+    "what kind of numbers",
+    "kind of numbers are"
+  ],
+  "incorrectTranscriptions": [],
+  "improvementSuggestions": [
+    "Improve speaker attribution to better distinguish between speakers",
+    "Increase content coverage by capturing more key information from the original dialogue",
+    "Improve logical flow and topic continuity between sentences"
+  ]
+}
