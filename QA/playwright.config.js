@@ -4,8 +4,8 @@ import { defineConfig } from '@playwright/test';
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
 
 export default defineConfig({
-  testDir: './2_tests',
-  timeout: 30000,
+  testDir: './3_tests',
+  timeout: 300000,
   // Add these properties for one-by-one execution
   workers: 1,           // Run tests with just 1 worker (sequentially)
   fullyParallel: false, // Disable parallel execution
@@ -30,10 +30,10 @@ export default defineConfig({
   reporter: [
     ['html', { 
       outputFolder: `./automation-results/${timestamp}`,
-      open: 'always' 
+      open: 'never' 
     }],
     ['list'],
-    ['./utils/testHistoryReporter.js', {}] // Custom reporter
+    ['./4_utils/testHistoryReporter.js', {}] // Custom reporter
   ],
   outputDir: `./automation-results/${timestamp}`,
   preserveOutput: 'always'

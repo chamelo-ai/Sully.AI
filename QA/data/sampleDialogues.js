@@ -5,10 +5,10 @@
 
 const sampleDialogues = {
   'cough': [
-    { speaker: 'Clinician', text: 'Hello, what brings you in today?' },
-    { speaker: 'Patient', text: 'I have had a persistent cough for the past two weeks.' },
-    { speaker: 'Clinician', text: 'I see. Is it worse at any particular time of day?' },
-    { speaker: 'Patient', text: 'It seems worse at night and early morning.' },
+    { speaker: 'Clinician', text: 'Are you coughing?' },
+    { speaker: 'Patient', text: 'Yes, I have been coughing for few days now' },
+    { speaker: 'Clinician', text: 'Any pain in your chest?' },
+    { speaker: 'Patient', text: 'Just here and there' },
     { speaker: 'Clinician', text: 'Any fever, chills, or shortness of breath?' },
     { speaker: 'Patient', text: 'No fever or chills, but I do feel short of breath sometimes after coughing a lot.' }
   ],

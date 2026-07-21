@@ -1,29 +1,197 @@
 /**
  * Transcript analyzer utility with OpenAI API integration
- * Provides comprehensive transcript analysis functionality
  */
 
 import { stringSimilarity } from 'string-similarity-js';
 import dotenv from 'dotenv';
 import axios from 'axios';
+import fs from 'fs/promises';
+import path from 'path';
+import { getTranscriptText } from './browserUtils.js';
 
 // Load environment variables
 dotenv.config();
 
-// Get OpenAI API key from environment
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_API_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
+// Configuration constants
+const CONFIG = {
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY,
+    endpoint: 'https://api.openai.com/v1/chat/completions',
+    model: 'gpt-4'
+  },
+  analysis: {
+    qualityThresholds: {
+      speakerAccuracy: 0.7,
+      contentCoverage: 0.7,
+      coherence: 0.7,
+      naturalness: 0.7,
+      overallScore: 0.8
+    }
+  },
+  stopWords: new Set([
+    'a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor', 'on', 'at', 'to', 'by',
+    'is', 'are', 'was', 'were', 'be', 'being', 'been', 'have', 'has', 'had',
+    'do', 'does', 'did', 'i', 'you', 'he', 'she', 'it', 'we', 'they',
+    'this', 'that', 'these', 'those', 'my', 'your', 'his', 'her', 'its', 'our', 'their'
+  ]),
+  medicalTermRegex: /\b(diagnos(is|e)|symptom|treatment|medication|condition|pain|discomfort|prescription|chronic|acute|infection|disease|disorder|syndrome|therapy|allergi(c|es)|assessment|examination|test results|prognosis|referral|specialist|surgery|procedure|recovery|follow-up|medical history|vital signs|blood pressure|temperature|pulse|respiration|breath|cough|fatigue|nausea|dizziness|headache|migraine|fever|inflammation|swelling|rash|discharge|bleeding|wound|injury|fracture|strain|sprain|tumor|cancer|diabetes|hypertension|asthma|copd|arthritis|depression|anxiety)\b/gi
+};
+
+/**
+ * Process transcript and analyze quality
+ */
+export async function processTranscript(page, errorModal, dialogue, resultsDir, useLocalAnalyzer = false) {
+  const timestamp = new Date().toISOString().replace(/[:T.]/g, '-');
+  
+  // Check for error modal
+  const isErrorVisible = await errorModal.isVisible({ timeout: 5000 }).catch(() => false);
+  if (isErrorVisible) {
+    console.log('Error modal is visible - recording might be too short');
+    return null;
+  }
+  
+  // Get transcript text
+  console.log('Attempting to retrieve transcript...');
+  const transcriptText = await getTranscriptText(page);
+  
+  if (!transcriptText) {
+    console.log('No transcript text found');
+    await page.screenshot({ 
+      path: path.join(resultsDir, `no_transcript_${timestamp}.png`),
+      fullPage: true 
+    });
+    return null;
+  }
+  
+  // Convert the original dialogue to text
+  const originalText = dialogue
+    .map(line => `${line.speaker}: ${line.text}`)
+    .join('\n');
+    
+  // Save files
+  await saveFiles(transcriptText, originalText, timestamp, resultsDir);
+  
+  // Take screenshot
+  await page.screenshot({ 
+    path: path.join(resultsDir, `transcript_screenshot_${timestamp}.png`),
+    fullPage: false 
+  });
+  
+  // Analyze quality and return results
+  return analyzeAndValidate(transcriptText, originalText, timestamp, resultsDir, useLocalAnalyzer);
+}
+
+/**
+ * Save transcript and original files
+ */
+async function saveFiles(transcriptText, originalText, timestamp, resultsDir) {
+  const transcriptFilePath = path.join(resultsDir, `transcript_${timestamp}.txt`);
+  const originalFilePath = path.join(resultsDir, `original_${timestamp}.txt`);
+  
+  await fs.writeFile(transcriptFilePath, transcriptText);
+  await fs.writeFile(originalFilePath, originalText);
+  console.log(`Transcript saved to: ${transcriptFilePath}`);
+}
+
+/**
+ * Analyze transcript and validate against threshold
+ */
+async function analyzeAndValidate(transcriptText, originalText, timestamp, resultsDir, useLocalAnalyzer = false) {
+  try {
+    console.log('Analyzing transcript quality...');
+    
+    // Use the existing utility for transcript analysis
+    const analysisResults = await analyzeTranscriptQuality(transcriptText, originalText, useLocalAnalyzer);
+    
+    // Get improvement suggestions
+    const suggestions = generateImprovementSuggestions(analysisResults);
+    
+    // Create quality report
+    const qualityResults = prepareQualityReport(analysisResults, suggestions);
+    
+    // Save results
+    const resultsFilePath = path.join(resultsDir, `quality_results_${timestamp}.json`);
+    await fs.writeFile(resultsFilePath, JSON.stringify(qualityResults, null, 2));
+    
+    // Log results
+    logAnalysisResults(qualityResults, transcriptText, originalText);
+
+    // NOTE: the quality-threshold gate is asserted by the caller (after the
+    // report is written), so a failing score still produces a report AND fails
+    // the test — instead of being silently swallowed here.
+    return { qualityResults, transcriptText, originalText };
+    
+  } catch (error) {
+    console.error('Error in transcript quality evaluation:', error);
+    return null;
+  }
+}
+
+/**
+ * Prepare quality report from analysis results
+ */
+function prepareQualityReport(analysisResults, suggestions) {
+  return {
+    contentAccuracy: Math.round(analysisResults.contentCoverage * 100),
+    speakerAttribution: Math.round(analysisResults.speakerAccuracy * 100),
+    coherence: Math.round(analysisResults.coherence * 10),
+    naturalness: Math.round(analysisResults.naturalness * 10),
+    overallScore: Math.round(analysisResults.overallScore * 100),
+    presentPhrases: analysisResults.presentPhrases,
+    missingPhrases: analysisResults.missingPhrases,
+    incorrectTranscriptions: analysisResults.incorrectTranscriptions,
+    improvementSuggestions: suggestions
+  };
+}
+
+/**
+ * Log analysis results to console
+ */
+function logAnalysisResults(qualityResults, transcriptText, originalText) {
+  // Log comparison
+  console.log('\n============= TRANSCRIPT COMPARISON =============');
+  console.log('ORIGINAL:');
+  console.log(originalText.substring(0, 300) + '...');
+  console.log('TRANSCRIPT:');
+  console.log(transcriptText.substring(0, 300) + '...');
+  
+  // Log metrics
+  console.log('\n============= TRANSCRIPT QUALITY METRICS =============');
+  console.log(`CONTENT ACCURACY: ${qualityResults.contentAccuracy}%`);
+  console.log(`SPEAKER ATTRIBUTION: ${qualityResults.speakerAttribution}%`);
+  console.log(`COHERENCE: ${qualityResults.coherence}/10`);
+  console.log(`NATURALNESS: ${qualityResults.naturalness}/10`);
+  console.log(`OVERALL SCORE: ${qualityResults.overallScore}%`);
+  
+  // Log suggestions
+  if (qualityResults.improvementSuggestions.length > 0) {
+    console.log('\n============= IMPROVEMENT SUGGESTIONS =============');
+    qualityResults.improvementSuggestions.forEach((suggestion, index) => {
+      console.log(`${index + 1}. ${suggestion}`);
+    });
+  }
+  
+  // Log missing phrases
+  if (qualityResults.missingPhrases.length > 0) {
+    console.log('\n============= KEY MISSING PHRASES =============');
+    qualityResults.missingPhrases.slice(0, 5).forEach((phrase, index) => {
+      console.log(`${index + 1}. "${phrase}"`);
+    });
+  }
+}
 
 /**
  * Analyze transcript quality compared to original dialogue
- * Uses OpenAI API if available, falls back to local analysis if not
- * @param {string} transcriptText - Generated transcript text
- * @param {string} originalText - Original dialogue text
- * @returns {Promise<Object>} - Analysis results
  */
-async function analyzeTranscriptQuality(transcriptText, originalText) {
+export async function analyzeTranscriptQuality(transcriptText, originalText, useLocalAnalyzer = false) {
+  // Force the deterministic local analyzer, bypassing the LLM judge entirely.
+  if (useLocalAnalyzer) {
+    console.log('Using local (heuristic) analyzer — LLM judge bypassed');
+    return localAnalyzeTranscriptQuality(transcriptText, originalText);
+  }
+
   // First try OpenAI-based analysis
-  if (OPENAI_API_KEY) {
+  if (CONFIG.openai.apiKey) {
     try {
       console.log('Attempting transcript analysis with OpenAI API...');
       const openAIAnalysis = await analyzeWithOpenAI(transcriptText, originalText);
@@ -48,9 +216,6 @@ async function analyzeTranscriptQuality(transcriptText, originalText) {
 
 /**
  * Analyze transcript quality using OpenAI API
- * @param {string} transcriptText - Generated transcript text
- * @param {string} originalText - Original dialogue text
- * @returns {Promise<Object>} - Analysis results or null if failed
  */
 async function analyzeWithOpenAI(transcriptText, originalText) {
   try {
@@ -96,9 +261,9 @@ Respond ONLY with the JSON. No additional text, explanations, or markdown format
 `;
 
     const response = await axios.post(
-      OPENAI_API_ENDPOINT,
+      CONFIG.openai.endpoint,
       {
-        model: 'gpt-4',
+        model: CONFIG.openai.model,
         messages: [
           { role: 'system', content: 'You are a transcript quality analysis tool. Provide detailed analysis in the requested JSON format and nothing else.' },
           { role: 'user', content: prompt }
@@ -109,14 +274,13 @@ Respond ONLY with the JSON. No additional text, explanations, or markdown format
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`
+          'Authorization': `Bearer ${CONFIG.openai.apiKey}`
         }
       }
     );
     
     const responseText = response.data.choices[0].message.content.trim();
     
-    // Parse the JSON
     try {
       const analysis = JSON.parse(responseText);
       
@@ -152,14 +316,10 @@ Respond ONLY with the JSON. No additional text, explanations, or markdown format
 
 /**
  * Analyze transcript quality using local methods
- * @param {string} transcriptText - Generated transcript text
- * @param {string} originalText - Original dialogue text
- * @returns {Promise<Object>} - Analysis results
  */
 async function localAnalyzeTranscriptQuality(transcriptText, originalText) {
   // Extract key phrases from original text
   const keyPhrases = extractKeyPhrases(originalText);
-  console.log('Extracted key phrases:', keyPhrases);
   
   // Check which key phrases appear in transcript
   const presentPhrases = keyPhrases.filter(phrase => 
@@ -211,9 +371,7 @@ async function localAnalyzeTranscriptQuality(transcriptText, originalText) {
     presentPhrases,
     missingPhrases,
     incorrectTranscriptions,
-    // Will be populated by the quality evaluator
     improvementSuggestions: [],
-    // Return scores on 100-point scale
     scores: {
       contentAccuracy: Math.round(contentCoverage * 100),
       speakerAttributionScore: Math.round(speakerAccuracy * 100),
@@ -226,32 +384,25 @@ async function localAnalyzeTranscriptQuality(transcriptText, originalText) {
 
 /**
  * Extract key phrases from dialogue text
- * @param {string} text - Original dialogue text
- * @returns {string[]} - Array of key phrases
  */
-function extractKeyPhrases(text) {
-  // Simple extraction of medical terms and phrases
+export function extractKeyPhrases(text) {
   const phrases = [];
   
   // Extract medical terms using regex patterns
-  const medicalTermRegex = /\b(diagnos(is|e)|symptom|treatment|medication|condition|pain|discomfort|prescription|chronic|acute|infection|disease|disorder|syndrome|therapy|allergi(c|es)|assessment|examination|test results|prognosis|referral|specialist|surgery|procedure|recovery|follow-up|medical history|vital signs|blood pressure|temperature|pulse|respiration|breath|cough|fatigue|nausea|dizziness|headache|migraine|fever|inflammation|swelling|rash|discharge|bleeding|wound|injury|fracture|strain|sprain|tumor|cancer|diabetes|hypertension|asthma|copd|arthritis|depression|anxiety)\b/gi;
-  
-  let match;
-  while ((match = medicalTermRegex.exec(text)) !== null) {
-    phrases.push(match[0].toLowerCase());
-  }
+  const medicalTerms = extractRegexMatches(text, CONFIG.medicalTermRegex, 0)
+    .map(term => term.toLowerCase());
+  phrases.push(...medicalTerms);
   
   // Extract phrases with speaker attribution
-  const speakerPhrases = text.split('\n').map(line => {
-    const parts = line.split(':');
-    if (parts.length >= 2) {
-      return parts[1].trim();
-    }
-    return null;
-  }).filter(Boolean);
+  const speakerPhrases = text.split('\n')
+    .map(line => {
+      const parts = line.split(':');
+      return parts.length >= 2 ? parts[1].trim() : null;
+    })
+    .filter(Boolean);
   
   // Break phrases into smaller parts (3-5 words)
-  speakerPhrases.forEach(phrase => {
+  for (const phrase of speakerPhrases) {
     const words = phrase.split(/\s+/);
     if (words.length > 4) {
       for (let i = 0; i < words.length - 3; i++) {
@@ -260,39 +411,57 @@ function extractKeyPhrases(text) {
     } else {
       phrases.push(phrase.toLowerCase());
     }
-  });
+  }
   
   // Remove duplicates and trim to reasonable number
   return [...new Set(phrases)].slice(0, 15);
 }
 
 /**
+ * Extract all regex matches from text
+ */
+function extractRegexMatches(text, regex, groupIndex) {
+  const results = [];
+  let match;
+  const regexCopy = new RegExp(regex.source, regex.flags);
+  
+  while ((match = regexCopy.exec(text)) !== null) {
+    results.push(match[groupIndex]);
+  }
+  
+  return results;
+}
+
+/**
  * Check if a key phrase appears in the transcript
- * @param {string} phrase - Key phrase to look for
- * @param {string} transcript - Generated transcript
- * @returns {boolean} - Whether the phrase is present
  */
 function phraseAppearsInTranscript(phrase, transcript) {
+  const lowerPhrase = phrase.toLowerCase();
+  const lowerTranscript = transcript.toLowerCase();
+  
   // Direct match
-  if (transcript.toLowerCase().includes(phrase.toLowerCase())) {
+  if (lowerTranscript.includes(lowerPhrase)) {
     return true;
   }
   
-  // Check for high similarity matches (for handling minor transcription errors)
-  const transcriptWords = transcript.toLowerCase().split(/\s+/);
-  const phraseWords = phrase.toLowerCase().split(/\s+/);
-  
-  // For single words, check similarity
+  // For single words, check similarity with any word in transcript
+  const phraseWords = lowerPhrase.split(/\s+/);
   if (phraseWords.length === 1) {
-    return transcriptWords.some(word => 
-      stringSimilarity(word, phrase) > 0.8
-    );
+    const transcriptWords = lowerTranscript.split(/\s+/);
+    return transcriptWords.some(word => stringSimilarity(word, lowerPhrase) > 0.8);
   }
   
   // For multi-word phrases, use sliding window to check for similar phrases
-  for (let i = 0; i <= transcriptWords.length - phraseWords.length; i++) {
-    const windowText = transcriptWords.slice(i, i + phraseWords.length).join(' ');
-    if (stringSimilarity(windowText, phrase) > 0.8) {
+  const transcriptWords = lowerTranscript.split(/\s+/);
+  const phraseLengthWords = phraseWords.length;
+  
+  // Skip if transcript is too short
+  if (transcriptWords.length < phraseLengthWords) return false;
+  
+  // Check each possible window in transcript
+  for (let i = 0; i <= transcriptWords.length - phraseLengthWords; i++) {
+    const windowText = transcriptWords.slice(i, i + phraseLengthWords).join(' ');
+    if (stringSimilarity(windowText, lowerPhrase) > 0.8) {
       return true;
     }
   }
@@ -302,57 +471,24 @@ function phraseAppearsInTranscript(phrase, transcript) {
 
 /**
  * Compare speaker patterns between original dialogue and transcript
- * @param {string} originalText - Original dialogue text with speaker labels
- * @param {string} transcriptText - Generated transcript text
- * @returns {number} - Score between 0-1 representing speaker attribution accuracy
  */
 function analyzeSpeakerAttribution(originalText, transcriptText) {
-  // Extract speaker patterns from original text (using colon format)
+  // Extract speaker patterns
   const originalSpeakerPattern = /\b([A-Za-z]+(?:\s[A-Za-z]+)?):\s/g;
-  
-  // Extract speaker patterns from transcript (supporting both colon and comma formats)
   const transcriptSpeakerPattern = /\b([A-Za-z]+(?:\s[A-Za-z]+)?)[,:]\s/g;
   
-  let originalMatch;
-  const originalSpeakers = [];
-  while ((originalMatch = originalSpeakerPattern.exec(originalText)) !== null) {
-    originalSpeakers.push(originalMatch[1].toLowerCase());
-  }
-  
-  let transcriptMatch;
-  const transcriptSpeakers = [];
-  while ((transcriptMatch = transcriptSpeakerPattern.exec(transcriptText)) !== null) {
-    transcriptSpeakers.push(transcriptMatch[1].toLowerCase());
-  }
-  
-  // Log for debugging
-  console.log('Original speakers found:', originalSpeakers.length, originalSpeakers);
-  console.log('Transcript speakers found:', transcriptSpeakers.length, transcriptSpeakers);
+  // Extract all speaker occurrences
+  const originalSpeakers = extractAllMatches(originalText, originalSpeakerPattern, 1);
+  const transcriptSpeakers = extractAllMatches(transcriptText, transcriptSpeakerPattern, 1);
   
   // If transcript doesn't have speaker attributions, return 0
   if (transcriptSpeakers.length === 0) {
-    console.log('No speaker attributions found in transcript');
     return 0;
   }
   
   // Count transitions (speaker changes)
-  let originalTransitions = 0;
-  let transcriptTransitions = 0;
-  
-  for (let i = 1; i < originalSpeakers.length; i++) {
-    if (originalSpeakers[i] !== originalSpeakers[i-1]) {
-      originalTransitions++;
-    }
-  }
-  
-  for (let i = 1; i < transcriptSpeakers.length; i++) {
-    if (transcriptSpeakers[i] !== transcriptSpeakers[i-1]) {
-      transcriptTransitions++;
-    }
-  }
-  
-  console.log('Original transitions:', originalTransitions);
-  console.log('Transcript transitions:', transcriptTransitions);
+  const originalTransitions = countTransitions(originalSpeakers);
+  const transcriptTransitions = countTransitions(transcriptSpeakers);
   
   // Calculate ratio of transitions captured
   const transitionRatio = originalTransitions === 0 ? 
@@ -376,21 +512,43 @@ function analyzeSpeakerAttribution(originalText, transcriptText) {
   const speakerCoverage = uniqueOriginalSpeakers.length === 0 ?
     1 : speakerMatches / uniqueOriginalSpeakers.length;
   
-  console.log('Speaker coverage:', speakerCoverage);
-  
   // Combined score (weighted)
-  const finalScore = (transitionRatio * 0.6) + (speakerCoverage * 0.4);
-  console.log('Final speaker attribution score:', finalScore);
+  return (transitionRatio * 0.6) + (speakerCoverage * 0.4);
+}
+
+/**
+ * Extract all regex matches from text
+ */
+function extractAllMatches(text, regex, groupIndex) {
+  const results = [];
+  let match;
   
-  return finalScore;
+  while ((match = regex.exec(text)) !== null) {
+    results.push(match[groupIndex].toLowerCase());
+  }
+  
+  return results;
+}
+
+/**
+ * Count number of transitions (changes) in a sequence
+ */
+function countTransitions(sequence) {
+  let transitions = 0;
+  
+  for (let i = 1; i < sequence.length; i++) {
+    if (sequence[i] !== sequence[i-1]) {
+      transitions++;
+    }
+  }
+  
+  return transitions;
 }
 
 /**
  * Analyze coherence of transcript
- * @param {string} text - Transcript text
- * @returns {number} - Score between 0-1 representing coherence
  */
-function analyzeCoherence(text) {
+export function analyzeCoherence(text) {
   // Split into sentences
   const sentences = text.split(/[.!?]+\s+/).filter(s => s.trim().length > 0);
   
@@ -401,10 +559,10 @@ function analyzeCoherence(text) {
   // Measure semantic similarity between adjacent sentences
   let totalSimilarity = 0;
   for (let i = 0; i < sentences.length - 1; i++) {
-    const currentSentence = sentences[i].toLowerCase();
-    const nextSentence = sentences[i + 1].toLowerCase();
-    
-    const similarity = stringSimilarity(currentSentence, nextSentence);
+    const similarity = stringSimilarity(
+      sentences[i].toLowerCase(), 
+      sentences[i + 1].toLowerCase()
+    );
     totalSimilarity += similarity;
   }
   
@@ -412,18 +570,13 @@ function analyzeCoherence(text) {
   const avgSimilarity = totalSimilarity / (sentences.length - 1);
   
   // Coherence has a sweet spot - not too similar, not too different
-  // Too similar: lacks information progression
-  // Too different: lacks logical flow
   let coherenceScore;
   if (avgSimilarity < 0.1) {
-    // Too different - scale up linearly from 0 to 0.5
-    coherenceScore = avgSimilarity * 5;
+    coherenceScore = avgSimilarity * 5; // Too different
   } else if (avgSimilarity <= 0.4) {
-    // Optimal range - map 0.1-0.4 to 0.5-1.0
-    coherenceScore = 0.5 + ((avgSimilarity - 0.1) * (0.5 / 0.3));
+    coherenceScore = 0.5 + ((avgSimilarity - 0.1) * (0.5 / 0.3)); // Optimal
   } else {
-    // Too similar - scale down from 1.0 to 0.5 as similarity increases
-    coherenceScore = 1.0 - ((avgSimilarity - 0.4) * (0.5 / 0.6));
+    coherenceScore = 1.0 - ((avgSimilarity - 0.4) * (0.5 / 0.6)); // Too similar
   }
   
   // Adjust for topic continuity
@@ -437,24 +590,14 @@ function analyzeCoherence(text) {
 
 /**
  * Extract topic words from text
- * @param {string} text - Input text
- * @returns {string[]} - Array of topic words
  */
 function extractTopicWords(text) {
   // Extract nouns and important content words
-  // This is a simplified approach
   const words = text.toLowerCase().split(/\s+/);
   
   // Filter out common stop words
-  const stopWords = new Set([
-    'a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor', 'on', 'at', 'to', 'by',
-    'is', 'are', 'was', 'were', 'be', 'being', 'been', 'have', 'has', 'had',
-    'do', 'does', 'did', 'i', 'you', 'he', 'she', 'it', 'we', 'they',
-    'this', 'that', 'these', 'those', 'my', 'your', 'his', 'her', 'its', 'our', 'their'
-  ]);
-  
   const contentWords = words.filter(word => 
-    word.length > 3 && !stopWords.has(word)
+    word.length > 3 && !CONFIG.stopWords.has(word)
   );
   
   // Get frequency count
@@ -472,9 +615,6 @@ function extractTopicWords(text) {
 
 /**
  * Analyze topic continuity across sentences
- * @param {string[]} sentences - Array of sentences
- * @param {string[]} topicWords - Array of topic words
- * @returns {number} - Score between 0-1 representing topic continuity
  */
 function analyzeTopicContinuity(sentences, topicWords) {
   if (sentences.length <= 1 || topicWords.length === 0) {
@@ -482,25 +622,17 @@ function analyzeTopicContinuity(sentences, topicWords) {
   }
   
   // Count sentences that contain at least one topic word
-  let sentencesWithTopic = 0;
-  
-  sentences.forEach(sentence => {
-    const sentenceLower = sentence.toLowerCase();
-    const hasTopic = topicWords.some(word => sentenceLower.includes(word));
-    if (hasTopic) {
-      sentencesWithTopic++;
-    }
-  });
+  const sentencesWithTopic = sentences.filter(sentence => 
+    topicWords.some(word => sentence.toLowerCase().includes(word))
+  ).length;
   
   return sentencesWithTopic / sentences.length;
 }
 
 /**
  * Analyze naturalness of transcript
- * @param {string} text - Transcript text
- * @returns {number} - Score between 0-1 representing naturalness
  */
-function analyzeNaturalness(text) {
+export function analyzeNaturalness(text) {
   // Split into sentences
   const sentences = text.split(/[.!?]+\s+/).filter(s => s.trim().length > 0);
   
@@ -508,13 +640,13 @@ function analyzeNaturalness(text) {
     return 0.5; // Default score for empty text
   }
   
-  // 1. Sentence length diversity (natural text has varied sentence lengths)
+  // 1. Sentence length diversity
   const sentenceLengths = sentences.map(s => s.split(/\s+/).length);
   const avgLength = sentenceLengths.reduce((sum, len) => sum + len, 0) / sentenceLengths.length;
-  const lengthVariation = sentenceLengths.map(len => Math.abs(len - avgLength)).reduce((sum, diff) => sum + diff, 0) / sentenceLengths.length;
+  const lengthVariation = sentenceLengths.map(len => Math.abs(len - avgLength))
+    .reduce((sum, diff) => sum + diff, 0) / sentenceLengths.length;
   
-  // Normalize length variation: too little or too much variation reduces score
-  // Optimal variation is around 2-4 words
+  // Normalize length variation
   const lengthVariationScore = lengthVariation < 1 ? 
     lengthVariation : 
     (lengthVariation > 4 ? 1 - ((lengthVariation - 4) / 8) : 1);
@@ -527,24 +659,23 @@ function analyzeNaturalness(text) {
   
   const uniqueStarters = new Set(starterWords);
   const starterDiversityScore = sentences.length <= 3 ? 
-    1 : // For very short texts, don't penalize
-    Math.min(uniqueStarters.size / Math.min(sentences.length, 10), 1);
+    1 : Math.min(uniqueStarters.size / Math.min(sentences.length, 10), 1);
   
-  // 3. Word repetition (natural speech has some repetition but not too much)
+  // 3. Word repetition
   const words = text.toLowerCase().split(/\s+/);
   const wordFreq = {};
-  words.forEach(word => {
+  for (const word of words) {
     if (word.length > 3) { // Only consider meaningful words
       wordFreq[word] = (wordFreq[word] || 0) + 1;
     }
-  });
+  }
   
   // Calculate repetition rate
   const meaningfulWords = Object.keys(wordFreq).length;
   const totalMeaningfulWordCount = Object.values(wordFreq).reduce((sum, count) => sum + count, 0);
   const repetitionRate = meaningfulWords / totalMeaningfulWordCount;
   
-  // Map repetition rate to score (0.4-0.6 is ideal range)
+  // Map repetition rate to score
   let repetitionScore;
   if (repetitionRate < 0.4) {
     repetitionScore = repetitionRate / 0.4; // Too much repetition
@@ -555,17 +686,15 @@ function analyzeNaturalness(text) {
   }
   
   // 4. Sentence length reasonableness
-  let lengthReasonablenessScore = 0;
-  for (const length of sentenceLengths) {
+  const lengthReasonablenessScore = sentenceLengths.map(length => {
     if (length >= 4 && length <= 20) {
-      lengthReasonablenessScore += 1; // Ideal length
+      return 1; // Ideal length
     } else if (length < 4) {
-      lengthReasonablenessScore += length / 4; // Too short
+      return length / 4; // Too short
     } else {
-      lengthReasonablenessScore += 1 - Math.min((length - 20) / 20, 0.8); // Too long
+      return 1 - Math.min((length - 20) / 20, 0.8); // Too long
     }
-  }
-  lengthReasonablenessScore /= sentenceLengths.length;
+  }).reduce((sum, score) => sum + score, 0) / sentenceLengths.length;
   
   // Combine scores with different weights
   return (
@@ -578,28 +707,24 @@ function analyzeNaturalness(text) {
 
 /**
  * Identify incorrectly transcribed segments
- * @param {string} originalText - Original dialogue text
- * @param {string} transcriptText - Generated transcript text
- * @returns {Array} - Array of {original, transcribed} objects
  */
-function findIncorrectTranscriptions(originalText, transcriptText) {
+export function findIncorrectTranscriptions(originalText, transcriptText) {
+  const originalSentences = originalText.match(/[^.!?]+[.!?]+/g) || [];
+  const transcriptWords = transcriptText.split(/\s+/);
   const incorrectTranscriptions = [];
   
-  // Split into sentences
-  const originalSentences = originalText.match(/[^.!?]+[.!?]+/g) || [];
-  
-  originalSentences.forEach(sentence => {
+  for (const sentence of originalSentences) {
     const cleanSentence = sentence.trim();
-    if (cleanSentence.length < 10) return; // Skip very short sentences
+    if (cleanSentence.length < 10) continue;
     
-    // Find best matching segment in transcript
+    const sentenceWords = cleanSentence.split(/\s+/).length;
+    if (sentenceWords > transcriptWords.length) continue;
+    
+    // Find best matching segment
     let bestMatch = '';
     let bestScore = 0;
     
-    // Create sliding windows of transcript text to find best match
-    const transcriptWords = transcriptText.split(/\s+/);
-    const sentenceWords = cleanSentence.split(/\s+/).length;
-    
+    // Create sliding windows to find best match
     for (let i = 0; i <= transcriptWords.length - sentenceWords; i++) {
       const windowSize = Math.min(sentenceWords * 2, transcriptWords.length - i);
       const windowText = transcriptWords.slice(i, i + windowSize).join(' ');
@@ -619,36 +744,34 @@ function findIncorrectTranscriptions(originalText, transcriptText) {
         similarityScore: bestScore
       });
     }
-  });
+  }
   
-  // Sort by similarity score (ascending)
-  incorrectTranscriptions.sort((a, b) => a.similarityScore - b.similarityScore);
-  
-  // Return top 5 worst transcriptions
-  return incorrectTranscriptions.slice(0, 5);
+  // Sort by similarity score (ascending) and return top 5 worst transcriptions
+  return incorrectTranscriptions
+    .sort((a, b) => a.similarityScore - b.similarityScore)
+    .slice(0, 5);
 }
 
 /**
  * Generate improvement suggestions based on analysis
- * @param {Object} analysisResults - Results from analyzeTranscriptQuality
- * @returns {string[]} - Array of improvement suggestions
  */
-function generateImprovementSuggestions(analysisResults) {
+export function generateImprovementSuggestions(analysisResults) {
   const suggestions = [];
+  const thresholds = CONFIG.analysis.qualityThresholds;
   
-  if (analysisResults.speakerAccuracy < 0.7) {
+  if (analysisResults.speakerAccuracy < thresholds.speakerAccuracy) {
     suggestions.push("Improve speaker attribution to better distinguish between speakers");
   }
   
-  if (analysisResults.contentCoverage < 0.7) {
+  if (analysisResults.contentCoverage < thresholds.contentCoverage) {
     suggestions.push("Increase content coverage by capturing more key information from the original dialogue");
   }
   
-  if (analysisResults.coherence < 0.7) {
+  if (analysisResults.coherence < thresholds.coherence) {
     suggestions.push("Improve logical flow and topic continuity between sentences");
   }
   
-  if (analysisResults.naturalness < 0.7) {
+  if (analysisResults.naturalness < thresholds.naturalness) {
     suggestions.push("Make language more natural by varying sentence structure and length");
   }
   
@@ -657,18 +780,12 @@ function generateImprovementSuggestions(analysisResults) {
   }
   
   // Add generic suggestion if nothing specific identified
-  if (suggestions.length === 0 && analysisResults.overallScore < 0.8) {
+  if (suggestions.length === 0 && analysisResults.overallScore < thresholds.overallScore) {
     suggestions.push("Improve overall transcription accuracy and quality");
   }
   
   return suggestions;
 }
 
-export {
-  analyzeTranscriptQuality,
-  extractKeyPhrases,
-  findIncorrectTranscriptions,
-  analyzeCoherence,
-  analyzeNaturalness,
-  generateImprovementSuggestions
-};
+// All necessary functions are already exported with the export keyword
+// No need for a separate export statement

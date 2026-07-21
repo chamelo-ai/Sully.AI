@@ -1,31 +1,31 @@
 {
   "Scribe Flow: Select existing patient from dropdown and record visit without microphone permission": {
-    "totalRuns": 11,
-    "fails": 2
+    "totalRuns": 15,
+    "fails": 3
   },
   "Scribe Flow: Select existing patient from dropdown and record visit": {
-    "totalRuns": 11,
-    "fails": 2
+    "totalRuns": 22,
+    "fails": 11
   },
   "Scribe Transcript Flow: Send report after selecting an existing patient": {
-    "totalRuns": 11,
-    "fails": 2
+    "totalRuns": 19,
+    "fails": 10
   },
   "Scribe Flow: Test with AI-generated dialogue and Web Speech Synthesis": {
     "totalRuns": 9,
     "fails": 2
   },
   "User can login with email/password and navigate between nav bar": {
-    "totalRuns": 11,
-    "fails": 2
+    "totalRuns": 25,
+    "fails": 8
   },
   "User can navigate side navbar tabs": {
-    "totalRuns": 10,
-    "fails": 2
+    "totalRuns": 12,
+    "fails": 4
   },
   "Scribe Flow: Select existing patient from dropdown and record visit under mininum threshold": {
-    "totalRuns": 11,
-    "fails": 2
+    "totalRuns": 16,
+    "fails": 7
   },
   "Scribe Flow: Test with AI-generated dialogue and quality evaluation": {
     "totalRuns": 13,
@@ -40,11 +40,23 @@
     "fails": 0
   },
   "Scribe Flow: Generate and Test Dialogue with Alternating Voices": {
-    "totalRuns": 43,
-    "fails": 4
+    "totalRuns": 76,
+    "fails": 14
   },
   "Test Web Speech Synthesis with Distinct Voices": {
     "totalRuns": 1,
     "fails": 1
+  },
+  "verify transcript score for dialogue Scenarios - Cough": {
+    "totalRuns": 22,
+    "fails": 8
+  },
+  "verify transcript score for dialogue Scenarios - Cough (sample dialogue)": {
+    "totalRuns": 5,
+    "fails": 0
+  },
+  "verify transcript score for dialogue Scenarios - Cough (local analyzer)": {
+    "totalRuns": 9,
+    "fails": 6
   }
 }

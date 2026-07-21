@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "checkJs": false,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "maxNodeModuleJsDepth": 1
+  },
+  "include": [
+    "1_pages/**/*.js",
+    "2_pagesHelpers/**/*.js",
+    "3_tests/**/*.js",
+    "4_utils/**/*.js",
+    "fixtures/**/*.js",
+    "data/**/*.js",
+    "scripts/**/*.mjs",
+    "playwright.config.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "automation-results",
+    "results",
+    "temp",
+    "output"
+  ]
+}

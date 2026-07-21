@@ -1,37 +1,25 @@
-// File: data/testData.js
+// data/testData.js
 
-const common = {
-  // Login page elements
-  usernameInput: '#username',
-  passwordInput: '#password',
-  loginButton: 'button[type="submit"]',
-  profileHeader: '.profile-header',
-  
-  // Scribe page elements
-  existingPatientDropdown: '.patient-dropdown',
-  patientDropdownResults: '.patient-option',
-  startRecordingButton: 'button.start-recording',
-  stopRecordingButton: 'button.stop-recording',
-  finishVisitButton: 'button.finish-visit',
-  transcriptContent: '.transcript-content'
+export const testData = {
+  validLogin: {
+    username: 'nathancha33@gmail.com',
+    password: 'Testing1234',
+  },
+
+  /**
+   * Medical scenarios available for transcript scoring tests.
+   * Each string becomes the OpenAI prompt keyword AND the cache file prefix.
+   *
+   * Run a single scenario:  SCENARIO=headache npx playwright test Transcriptscore.spec.js
+   * Run all scenarios:      npx playwright test Transcriptscore.spec.js
+   */
+  dialogueScenarios: [
+    'cough',
+    'headache',
+    'diabetes',
+    'hypertension',
+    'backpain',
+    'anxiety',
+    'asthma',
+  ],
 };
-
-const testData = {
-    validLogin: {
-      username: 'nathancha33@gmail.com', 
-      password: 'Testing1234',         
-    },
-    
-    invalidLogin: {
-      username: 'wrong-email@example.com',
-      password: 'wrongPassword',
-    },
-
-    providerAddress: {
-      email: 'testing1234@gmail.com'
-    }
-
-  };
-  
-  export { common, testData };
-  

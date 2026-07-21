@@ -1,0 +1,8 @@
+node_modules/
+automation-results/
+results/
+temp/
+output/
+testHistory.json
+*.env
+.env*
